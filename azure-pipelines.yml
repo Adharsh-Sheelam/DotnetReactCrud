@@ -1,0 +1,97 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  apiSolution: 'Backend/Backend.sln'
+  apiProject: 'Backend/Backend/Backend.csproj'
+  testProject: 'Backend/Backend.Tests/Backend.Tests.csproj'
+
+stages:
+
+- stage: Build
+  displayName: 'Build, Test, and Package'
+
+  jobs:
+
+  # =========================
+  # BACKEND
+  # =========================
+  - job: BuildBackend
+    displayName: 'Build and Test .NET API'
+
+    steps:
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET 9 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '9.x'
+
+    - script: dotnet restore $(apiSolution)
+      displayName: 'Restore NuGet packages'
+
+    - script: dotnet build $(apiSolution) --configuration $(buildConfiguration) --no-restore
+      displayName: 'Build .NET solution'
+
+    - script: |
+        dotnet test $(testProject) \
+          --configuration $(buildConfiguration) \
+          --no-build \
+          --logger trx \
+          --results-directory $(Agent.TempDirectory)/TestResults
+      displayName: 'Run unit tests'
+
+    - task: PublishTestResults@2
+      displayName: 'Publish test results'
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: '*.trx'
+        searchFolder: '$(Agent.TempDirectory)/TestResults'
+
+    - script: |
+        dotnet publish $(apiProject) \
+          --configuration $(buildConfiguration) \
+          --output $(Build.ArtifactStagingDirectory)/api \
+          --no-build
+      displayName: 'Publish .NET API'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish API artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/api'
+        ArtifactName: 'api-drop'
+        publishLocation: 'Container'
+
+
+  # =========================
+  # FRONTEND
+  # =========================
+  - job: BuildFrontend
+    displayName: 'Build React Frontend'
+
+    steps:
+
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      inputs:
+        versionSpec: '20.x'
+
+    - script: |
+        cd client
+        npm ci
+        npm run build
+      displayName: 'Install dependencies and build React'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish React artifact'
+      inputs:
+        PathtoPublish: 'client/dist'
+        ArtifactName: 'web-drop'
+        publishLocation: 'Container'
