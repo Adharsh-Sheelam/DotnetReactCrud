@@ -40,11 +40,13 @@ stages:
       displayName: 'Build .NET solution'
 
     - script: |
-        dotnet test $(testProject) \
-          --configuration $(buildConfiguration) \
+        mkdir -p "$(Agent.TempDirectory)/TestResults"
+
+        dotnet test "$(testProject)" \
+          --configuration "$(buildConfiguration)" \
           --no-build \
-          --logger trx \
-          --results-directory $(Agent.TempDirectory)/TestResults
+          --logger "trx;LogFileName=test-results.trx" \
+          --results-directory "$(Agent.TempDirectory)/TestResults"
       displayName: 'Run unit tests'
 
     - task: PublishTestResults@2
@@ -52,13 +54,15 @@ stages:
       condition: succeededOrFailed()
       inputs:
         testResultsFormat: 'VSTest'
-        testResultsFiles: '*.trx'
+        testResultsFiles: 'test-results.trx'
         searchFolder: '$(Agent.TempDirectory)/TestResults'
+        mergeTestResults: true
+        failTaskOnFailedTests: true
 
     - script: |
-        dotnet publish $(apiProject) \
-          --configuration $(buildConfiguration) \
-          --output $(Build.ArtifactStagingDirectory)/api \
+        dotnet publish "$(apiProject)" \
+          --configuration "$(buildConfiguration)" \
+          --output "$(Build.ArtifactStagingDirectory)/api" \
           --no-build
       displayName: 'Publish .NET API'
 
@@ -78,10 +82,10 @@ stages:
 
     steps:
 
-    - task: NodeTool@0
-      displayName: 'Install Node.js'
+    - task: UseNode@1
+      displayName: 'Install Node.js 20'
       inputs:
-        versionSpec: '20.x'
+        version: '20.x'
 
     - script: |
         cd client
