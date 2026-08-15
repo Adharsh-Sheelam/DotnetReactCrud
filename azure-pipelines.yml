@@ -45,8 +45,10 @@ stages:
         dotnet test "$(testProject)" \
           --configuration "$(buildConfiguration)" \
           --no-build \
-          --logger "trx;LogFileName=test-results.trx" \
-          --results-directory "$(Agent.TempDirectory)/TestResults"
+          --logger "trx;LogFileName=$(Agent.TempDirectory)/TestResults/test-results.trx"
+
+        echo "===== Test result files ====="
+        find "$(Agent.TempDirectory)/TestResults" -type f -print
       displayName: 'Run unit tests'
 
     - task: PublishTestResults@2
