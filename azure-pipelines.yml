@@ -33,33 +33,23 @@ stages:
         packageType: 'sdk'
         version: '9.x'
 
-    - script: dotnet restore $(apiSolution)
+    - script: |
+        dotnet restore "$(apiSolution)"
       displayName: 'Restore NuGet packages'
 
-    - script: dotnet build $(apiSolution) --configuration $(buildConfiguration) --no-restore
+    - script: |
+        dotnet build "$(apiSolution)" \
+          --configuration "$(buildConfiguration)" \
+          --no-restore
       displayName: 'Build .NET solution'
 
-    - script: |
-        mkdir -p "$(Agent.TempDirectory)/TestResults"
-
-        dotnet test "$(testProject)" \
-          --configuration "$(buildConfiguration)" \
-          --no-build \
-          --logger "trx;LogFileName=$(Agent.TempDirectory)/TestResults/test-results.trx"
-
-        echo "===== Test result files ====="
-        find "$(Agent.TempDirectory)/TestResults" -type f -print
+    - task: DotNetCoreCLI@2
       displayName: 'Run unit tests'
-
-    - task: PublishTestResults@2
-      displayName: 'Publish test results'
-      condition: succeededOrFailed()
       inputs:
-        testResultsFormat: 'VSTest'
-        testResultsFiles: 'test-results.trx'
-        searchFolder: '$(Agent.TempDirectory)/TestResults'
-        mergeTestResults: true
-        failTaskOnFailedTests: true
+        command: 'test'
+        projects: '$(testProject)'
+        arguments: '--configuration $(buildConfiguration) --no-build'
+        publishTestResults: true
 
     - script: |
         dotnet publish "$(apiProject)" \
