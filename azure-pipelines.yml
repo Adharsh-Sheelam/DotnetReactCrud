@@ -124,7 +124,8 @@ stages:
           - task: AzureStaticWebApp@0
             displayName: 'Deploy to Static Web App (Dev)'
             inputs:
-              app_location: '$(Pipeline.Workspace)/web-drop'
+              cwd: '$(Pipeline.Workspace)'
+              app_location: 'web-drop'
               skip_app_build: true
               azure_static_web_apps_api_token: '$(SWA_TOKEN_DEV)'
 
@@ -164,7 +165,8 @@ stages:
           - task: AzureStaticWebApp@0
             displayName: 'Deploy to Static Web App (UAT)'
             inputs:
-              app_location: '$(Pipeline.Workspace)/web-drop'
+              cwd: '$(Pipeline.Workspace)'
+              app_location: 'web-drop'
               skip_app_build: true
               azure_static_web_apps_api_token: '$(SWA_TOKEN_UAT)'
 
@@ -204,6 +206,7 @@ stages:
           - task: AzureStaticWebApp@0
             displayName: 'Deploy to Static Web App (Prod)'
             inputs:
-              app_location: '$(Pipeline.Workspace)/web-drop'
+              cwd: '$(Pipeline.Workspace)'
+              app_location: 'web-drop'
               skip_app_build: true
               azure_static_web_apps_api_token: '$(SWA_TOKEN_PROD)'
