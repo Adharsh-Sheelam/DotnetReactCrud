@@ -7,11 +7,17 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  buildConfiguration: 'Release'
-  apiSolution: 'Backend/Backend.sln'
-  apiProject: 'Backend/Backend/Backend.csproj'
-  testProject: 'Backend/Backend.Tests/Backend.Tests.csproj'
-  azureServiceConnection: 'azure-cleanarch-connection'
+  - group: static-web-app-tokens
+  - name: buildConfiguration
+    value: 'Release'
+  - name: apiSolution
+    value: 'Backend/Backend.sln'
+  - name: apiProject
+    value: 'Backend/Backend/Backend.csproj'
+  - name: testProject
+    value: 'Backend/Backend.Tests/Backend.Tests.csproj'
+  - name: azureServiceConnection
+    value: 'azure-cleanarch-connection'
 
 stages:
 
