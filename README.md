@@ -12,6 +12,7 @@ It is a source code of my [youtube tutorial](https://youtu.be/qcczkv-Hz5c?si=yMJ
 - React router (routing)
 - React hook form (form and validation)
 - React hot toast (toaster)
+- Node js
 
 ## How to run the project
 
